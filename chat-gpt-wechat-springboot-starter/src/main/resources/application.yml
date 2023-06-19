@@ -1,0 +1,19 @@
+chat:
+  gpt:
+    config:
+      okhttp:
+        proxy:
+          host: 127.0.0.1
+          port: 7890
+        interceptors:
+          - com.disaster.chatgpt.infrastructure.client.interceptor.OpenAiResponseInterceptor
+          - com.disaster.chatgpt.infrastructure.client.interceptor.DefaultOpenAiAuthInterceptor
+      type: STREAM
+      apikey:
+        - xxxx-sdafsafs-xxx
+      strategy: com.disaster.chatgpt.infrastructure.client.function.KeyRandomStrategy
+      interceptor: com.disaster.chatgpt.infrastructure.client.interceptor.DynamicKeyOpenAiAuthInterceptor
+
+spring:
+  application:
+    name: chat-gpt-wechat

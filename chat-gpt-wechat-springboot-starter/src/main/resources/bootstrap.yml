@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: chat-gpt-wechat
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      config:
+        encode: UTF-8
+        namespace: 0640a301-454e-40aa-ad4a-886f85d132cf
+        username: nacos
+        password: nacos
+        group: dev
+        server-addr: yourIp:port
+        prefix: ${spring.application.name}
+        file-extension: yml
+        refresh-enabled: true
+      discovery:
+        server-addr: yourIp:port
+        group: dev
+        username: nacos
+        password: nacos
+        namespace: 0640a301-454e-40aa-ad4a-886f85d132cf
