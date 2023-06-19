@@ -13,6 +13,7 @@ chat:
         - xxxx-sdafsafs-xxx
       strategy: com.disaster.chatgpt.infrastructure.client.function.KeyRandomStrategy
       interceptor: com.disaster.chatgpt.infrastructure.client.interceptor.DynamicKeyOpenAiAuthInterceptor
+      proxy: yourProxyUrl
 
 spring:
   application:

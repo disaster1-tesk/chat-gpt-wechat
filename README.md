@@ -1,117 +1,124 @@
-# Welcome to <%= projectName %> 👋
-<% if (isProjectOnNpm) { -%>
-[![Version](https://img.shields.io/npm/v/<%= projectName %>.svg)](https://www.npmjs.com/package/<%= projectName %>)
-<% } -%>
-<% if (projectVersion && !isProjectOnNpm) { -%>
-![Version](https://img.shields.io/badge/version-<%= projectVersion %>-blue.svg?cacheSeconds=2592000)
-<% } -%>
-<% if (projectPrerequisites) { -%>
-<% projectPrerequisites.map(({ name, value }) => { -%>
-![Prerequisite](https://img.shields.io/badge/<%= name %>-<%= encodeURIComponent(value) %>-blue.svg)
-<% }) -%>
-<% } -%>
-<% if (projectDocumentationUrl) { -%>
-[![Documentation](https://img.shields.io/badge/documentation-yes-brightgreen.svg)](<%= projectDocumentationUrl %>)
-<% } -%>
-<% if (isGithubRepos) { -%>
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](<%= repositoryUrl %>/graphs/commit-activity)
-<% } -%>
-<% if (licenseName) { -%>
-[![License: <%= licenseName %>](https://img.shields.io/<%= isGithubRepos ? `github/license/${authorGithubUsername}/${projectName}` : `badge/License-${licenseName}-yellow.svg` %>)](<%= licenseUrl ? licenseUrl : '#' %>)
-<% } -%>
-<% if (authorTwitterUsername) { -%>
-[![Twitter: <%= authorTwitterUsername %>](https://img.shields.io/twitter/follow/<%= authorTwitterUsername %>.svg?style=social)](https://twitter.com/<%= authorTwitterUsername %>)
-<% } -%>
-<% if (projectDescription) { -%>
+# chat-gpt-wechat
 
-> <%= projectDescription %>
-<% } -%>
-<% if (projectHomepage) { -%>
+> a simple projection
 
-### 🏠 [Homepage](<%= projectHomepage %>)
-<% } -%>
-<% if (projectDemoUrl) { -%>
+chatgpt intelligent robot integrating qq and wechat
 
-### ✨ [Demo](<%= projectDemoUrl %>)
-<% } -%>
-<% if (projectPrerequisites && projectPrerequisites.length) { -%>
+## Installing / Getting started
 
-## Prerequisites
+Starting this project is very simple, you just need to follow the steps
 
-<% projectPrerequisites.map(({ name, value }) => { -%>
-- <%= name %> <%= value %>
-  <% }) -%>
-  <% } -%>
-  <% if (installCommand) { -%>
-
-## Install
-
-```sh
-<%= installCommand %>
+Run in jar:
+```shell
+git clone https://github.com/disaster1-tesk/chat-gpt-wechat.git
+mvn clean install
+cd chat-gpt-wechat-springboot-starter
+java -jar chat-gpt-wechat-springboot-starter-1.1.0.jar
 ```
-<% } -%>
-<% if (usage) { -%>
-
-## Usage
-
-```sh
-<%= usage %>
+Run in ide:
+```shell
+git clone https://github.com/disaster1-tesk/chat-gpt-wechat.git
+run in ide
 ```
-<% } -%>
-<% if (testCommand) { -%>
 
-## Run tests
+### Prepare
+The startup of the project depends on nacos, so you may need to install nacos,You also need to modify the configuration a little
 
-```sh
-<%= testCommand %>
+### Configuration
+
+```yaml
+chat:
+  gpt:
+    config:
+      okhttp:
+        proxy: #something about okhttp configuration
+          host: 127.0.0.1
+          port: 7890
+        interceptors:
+          - com.disaster.chatgpt.infrastructure.client.interceptor.OpenAiResponseInterceptor
+          - com.disaster.chatgpt.infrastructure.client.interceptor.DefaultOpenAiAuthInterceptor
+      type: STREAM # This configuration determines whether to stream chatgpt Api data back
+      apikey: # chat-gpt personel key
+        - xxxx-sdafsafs-xxx
+      strategy: com.disaster.chatgpt.infrastructure.client.function.KeyRandomStrategy 
+      interceptor: com.disaster.chatgpt.infrastructure.client.interceptor.DynamicKeyOpenAiAuthInterceptor
+      proxy: yourProxyUrl # if not settting okhttp proxy, it perhaps help you interview chatgpt api
+
+spring:
+  application:
+    name: chat-gpt-wechat
 ```
-<% } -%>
-<% if (authorName || authorTwitterUsername || authorGithubUsername) { -%>
 
-## Author
-<% if (authorName) { %>
-👤 **<%= authorName %>**
-<% } %>
-<% if (authorWebsite) { -%>
-* Website: <%= authorWebsite %>
-  <% } -%>
-  <% if (authorTwitterUsername) { -%>
-* Twitter: [@<%= authorTwitterUsername %>](https://twitter.com/<%= authorTwitterUsername %>)
-  <% } -%>
-  <% if (authorGithubUsername) { -%>
-* GitHub: [@<%= authorGithubUsername %>](https://github.com/<%= authorGithubUsername %>)
-  <% } -%>
-  <% if (authorLinkedInUsername) { -%>
-* LinkedIn: [@<%= authorLinkedInUsername %>](https://linkedin.com/in/<%= authorLinkedInUsername %>)
-  <% } -%>
-  <% } -%>
-  <% if (issuesUrl) { -%>
+### Run Type
 
-## 🤝 Contributing
+#### Web Type
 
-Contributions, issues and feature requests are welcome!
+```java
+package com.disaster.chatgpt;
 
-Feel free to check [issues page](<%= issuesUrl %>). <%= contributingUrl ? `You can also take a look at the [contributing guide](${contributingUrl}).` : '' %>
-<% } -%>
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
-## Show your support
+@SpringBootApplication
+@EnableDiscoveryClient
+@Slf4j
+public class ChatGptWechatApplication {
 
-Give a ⭐️ if this project helped you!
-<% if (authorPatreonUsername) { -%>
+    public static void main(String[] args) {
+        SpringApplicationBuilder builder = new SpringApplicationBuilder(ChatGptWechatApplication.class);
+        builder.headless(false).web(WebApplicationType.SERVLET).run(args);
+    }
 
-[![support us](https://img.shields.io/badge/become-a patreon%20us-orange.svg?cacheSeconds=2592000)](https://www.patreon.com/<%= authorPatreonUsername %>)
-<% } -%>
+}
 
-<% if (licenseName && licenseUrl) { -%>
+```
 
-## 📝 License
+#### None Type
 
-<% if (authorName && authorGithubUsername) { -%>
-Copyright © <%= currentYear %> [<%= authorName %>](https://github.com/<%= authorGithubUsername %>).
+```java
+package com.disaster.chatgpt;
 
-<% } -%>
-This project is [<%= licenseName %>](<%= licenseUrl %>) licensed.
-<% } -%>
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
-***
-<%- include('footer.md'); -%>
+@SpringBootApplication
+@EnableDiscoveryClient
+@Slf4j
+public class ChatGptWechatApplication {
+
+    public static void main(String[] args) {
+        SpringApplicationBuilder builder = new SpringApplicationBuilder(ChatGptWechatApplication.class);
+        builder.headless(false).web(WebApplicationType.NONE).run(args);
+    }
+
+}
+
+```
+
+## Features
+
+* Improve the processing of wechat \qq information
+* Supports parsing different types of configuration files
+* Supports different configuration centers
+* Configure center and start uncoupling
+
+## Links
+
+The implementation of this project depends on the following projects：
+
+itchat4j: https://github.com/yaphone/itchat4j
+
+mirai: https://github.com/mamoe/mirai
+
+Chat-gpt-java: https://github.com/Grt1228/chatgpt-java
+
+
+## Licensing
+
+"The code in this project is licensed under Apache License."
