@@ -2,6 +2,7 @@ package com.disaster.chatgpt.scanner;
 
 
 import cn.zhouyafeng.itchat4j.Wechat;
+import com.disaster.chatgpt.Utils.ThreadUtil;
 import com.disaster.chatgpt.adapter.QQAdapter;
 import com.disaster.chatgpt.adapter.WechatAdapter;
 import com.disaster.chatgpt.configcenter.Directory;
@@ -74,55 +75,59 @@ public class SystemScanner implements ApplicationRunner, ApplicationContextAware
     }
 
     public void qqLoginHandler(int type, Long userNum, String password) {
-        Bot bot = null;
-        if (type == 1) {
-            try {
-                if (Directory.BOT_CACHE.containsKey(userNum + ":" + password)) {
-                    return;
-                }
-                bot = BotFactory.INSTANCE.newBot(userNum, password.trim(), new BotConfiguration() {{
-                    fileBasedDeviceInfo();
-                    setProtocol(MiraiProtocol.ANDROID_PHONE);
-                    setHeartbeatStrategy(HeartbeatStrategy.STAT_HB);
-                    setLoginCacheEnabled(true);
-                    setDeviceInfo(bot1 -> new MiraiDeviceGenerator().generate());//引用插件生成随机信息
+       ThreadUtil.run(() -> {
+            Bot bot = null;
+            if (type == 1) {
+                try {
+                    if (Directory.BOT_CACHE.containsKey(userNum + ":" + password)) {
+                        return;
+                    }
+                    bot = BotFactory.INSTANCE.newBot(userNum, password.trim(), new BotConfiguration() {{
+                        fileBasedDeviceInfo();
+                        setProtocol(MiraiProtocol.ANDROID_PHONE);
+                        setHeartbeatStrategy(HeartbeatStrategy.STAT_HB);
+                        setLoginCacheEnabled(true);
+                        setDeviceInfo(bot1 -> new MiraiDeviceGenerator().generate());//引用插件生成随机信息
 //                setLoginSolver(); 覆盖登录解决器,在登录时可能遇到图形验证码或滑动验证码所使用
-                }});
-                //使用临时修复插件
-                FixProtocolVersion.update();
-                bot.login();
-                log.info("成功登录账号为 {} 的qq", userNum);
-                //订阅监听事件
-                bot.getEventChannel().registerListenerHost(qqAdapter);
-            } catch (Exception e) {
-                log.error(String.format("登录失败，失败原因 %s", e.getMessage()));
-            }
-            Directory.BOT_CACHE.put(userNum + ":" + password, bot);
-            log.info(String.format("成功登录账号为 %s 的qq", userNum));
-        } else {
-            try {
-                if (Directory.BOT_CACHE.containsKey(userNum.toString())) {
-                    return;
+                    }});
+                    //使用临时修复插件
+                    FixProtocolVersion.update();
+                    bot.login();
+                    log.info("成功登录账号为 {} 的qq", userNum);
+                    //订阅监听事件
+                    bot.getEventChannel().registerListenerHost(qqAdapter);
+                } catch (Exception e) {
+                    log.error(String.format("登录失败，失败原因 %s", e.getMessage()));
                 }
-                bot = BotFactory.INSTANCE.newBot(userNum, BotAuthorization.byQRCode(), configuration -> configuration.setProtocol(BotConfiguration.MiraiProtocol.ANDROID_WATCH));
-                //使用临时修复插件
-                FixProtocolVersion.update();
-                bot.login();
-                log.info("成功登录账号为 {} 的qq", userNum);
-                //订阅监听事件
-                bot.getEventChannel().registerListenerHost(qqAdapter);
-            } catch (Exception e) {
-                log.error(String.format("登录失败，失败原因 %s", e.getMessage()));
+                Directory.BOT_CACHE.put(userNum + ":" + password, bot);
+                log.info(String.format("成功登录账号为 %s 的qq", userNum));
+            } else {
+                try {
+                    if (Directory.BOT_CACHE.containsKey(userNum.toString())) {
+                        return;
+                    }
+                    bot = BotFactory.INSTANCE.newBot(userNum, BotAuthorization.byQRCode(), configuration -> configuration.setProtocol(BotConfiguration.MiraiProtocol.ANDROID_WATCH));
+                    //使用临时修复插件
+                    FixProtocolVersion.update();
+                    bot.login();
+                    log.info("成功登录账号为 {} 的qq", userNum);
+                    //订阅监听事件
+                    bot.getEventChannel().registerListenerHost(qqAdapter);
+                } catch (Exception e) {
+                    log.error(String.format("登录失败，失败原因 %s", e.getMessage()));
+                }
+                Directory.BOT_CACHE.put(userNum.toString(), bot);
+                log.info(String.format("成功登录账号为 %s 的qq", userNum));
             }
-            Directory.BOT_CACHE.put(userNum.toString(), bot);
-            log.info(String.format("成功登录账号为 %s 的qq", userNum));
-        }
+        });
     }
 
 
     public void wechatLoginHandler() {
-        Wechat wechatBot = new Wechat(wechatAdapter, "./");
-        wechatBot.start();
+        ThreadUtil.run(() -> {
+            Wechat wechatBot = new Wechat(wechatAdapter, "./");
+            wechatBot.start();
+        });
     }
 
     @Override
