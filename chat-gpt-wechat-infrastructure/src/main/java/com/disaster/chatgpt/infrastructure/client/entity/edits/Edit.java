@@ -15,7 +15,7 @@ import java.io.Serializable;
 @Getter
 @Builder
 @Slf4j
-@NoArgsConstructor(force = true)
+@NoArgsConstructor
 @AllArgsConstructor
 public class Edit implements Serializable {
     /**

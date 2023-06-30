@@ -15,7 +15,7 @@ import java.util.Objects;
 @Slf4j
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@NoArgsConstructor(force = true)
+@NoArgsConstructor
 @AllArgsConstructor
 public class FineTune implements Serializable {
 

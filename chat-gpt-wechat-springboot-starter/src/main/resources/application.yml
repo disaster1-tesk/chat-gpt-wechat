@@ -8,12 +8,11 @@ chat:
         interceptors:
           - com.disaster.chatgpt.infrastructure.client.interceptor.OpenAiResponseInterceptor
           - com.disaster.chatgpt.infrastructure.client.interceptor.DefaultOpenAiAuthInterceptor
-      type: STREAM
+      type: DEFAULT
       apikey:
-        - xxxx-sdafsafs-xxx
+        - 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
       strategy: com.disaster.chatgpt.infrastructure.client.function.KeyRandomStrategy
       interceptor: com.disaster.chatgpt.infrastructure.client.interceptor.DynamicKeyOpenAiAuthInterceptor
-      proxy: yourProxyUrl
 
 spring:
   application:

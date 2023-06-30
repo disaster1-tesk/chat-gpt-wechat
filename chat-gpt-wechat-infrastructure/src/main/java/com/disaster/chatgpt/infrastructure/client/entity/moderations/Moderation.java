@@ -18,7 +18,7 @@ import java.util.Objects;
 @Getter
 @Builder
 @Slf4j
-@NoArgsConstructor(force = true)
+@NoArgsConstructor
 @AllArgsConstructor
 public class Moderation implements Serializable {
 
