@@ -12,6 +12,8 @@ import com.disaster.chatgpt.infrastructure.client.entity.images.Item;
 import com.disaster.chatgpt.infrastructure.client.entity.whisper.WhisperResponse;
 import com.disaster.chatgpt.service.ChatGptMessageHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,9 +25,11 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class WechatAdapter implements IMsgHandlerFace {
+public class WechatAdapter implements IMsgHandlerFace, InitializingBean {
     @Autowired
     private MessageHandlerDispatcher messageHandlerDispatcher;
+
+    private ChatGptMessageHandler chatGptMessageHandler;
 
     public static final String picPrefix = "/src/main/resources/pic";
     public static final String viedoPrefix = "/src/main/resources/viedo";
@@ -33,50 +37,47 @@ public class WechatAdapter implements IMsgHandlerFace {
 
     @Override
     public String textMsgHandle(BaseMsg baseMsg) {
-        ChatGptMessageHandler dispatcher = messageHandlerDispatcher.dispatcher();
         if (baseMsg.isGroupMsg()) {
             //存在@机器人的消息就向ChatGPT提问
             if (baseMsg.getText().contains("@" + Core.getInstance().getNickName())) {
                 //去除@再提问
                 String prompt = baseMsg.getText().replace("@" + Core.getInstance().getNickName() + " ", "").trim();
-                return dispatcher.handlerText(prompt);
+                return chatGptMessageHandler.handlerText(prompt);
             }
             return null;
         } else {
-            return dispatcher.handlerText(baseMsg.getText());
+            return chatGptMessageHandler.handlerText(baseMsg.getText());
         }
     }
 
     @Override
     public String picMsgHandle(BaseMsg baseMsg) {
+        String fileName = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date());// 这里使用收到图片的时间作为文件名
+        String picPath = System.getProperty("user.dir") + picPrefix + File.separator + fileName + ".png"; // 调用此方法来保存图片
+        DownloadTools.getDownloadFn(baseMsg, MsgTypeEnum.PIC.getType(), picPath); // 保存图片的路径
         if (baseMsg.isGroupMsg()) {
             //存在@机器人的消息就向ChatGPT提问
             if (baseMsg.getText().contains("@" + Core.getInstance().getNickName())) {
                 //去除@再提问
                 log.info("群聊图片开始处理");
-                String fileName = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date());// 这里使用收到图片的时间作为文件名
-                String picPath = System.getProperty("user.dir") + picPrefix + File.separator + fileName + ".png"; // 调用此方法来保存图片
-                DownloadTools.getDownloadFn(baseMsg, MsgTypeEnum.PIC.getType(), picPath); // 保存图片的路径
-                ChatGptMessageHandler dispatcher = messageHandlerDispatcher.dispatcher();
-                ImageResponse imageResponse = dispatcher.handlerPicture(new File(picPath), ImageVariations.builder().build());
-                List<Item> data = imageResponse.getData();
-                StringBuilder sb = new StringBuilder();
-                data.forEach(item -> sb.append("优化之后的图片链接：" + item.getUrl() + "\n"));
+                StringBuilder sb = handlerPic(chatGptMessageHandler, picPath);
                 return sb.toString();
             }
             return null;
         } else {
             log.info("私聊图片开始处理");
-            String fileName = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date());// 这里使用收到图片的时间作为文件名
-            String picPath = System.getProperty("user.dir") + picPrefix + File.separator + fileName + ".png"; // 调用此方法来保存图片
-            DownloadTools.getDownloadFn(baseMsg, MsgTypeEnum.PIC.getType(), picPath); // 保存图片的路径
-            ChatGptMessageHandler dispatcher = messageHandlerDispatcher.dispatcher();
-            ImageResponse imageResponse = dispatcher.handlerPicture(new File(picPath), ImageVariations.builder().build());
-            List<Item> data = imageResponse.getData();
-            StringBuilder sb = new StringBuilder();
-            data.forEach(item -> sb.append("优化之后的图片链接：" + item.getUrl() + "\n"));
+            StringBuilder sb = handlerPic(chatGptMessageHandler, picPath);
             return sb.toString();
         }
+    }
+
+    @NotNull
+    private StringBuilder handlerPic(ChatGptMessageHandler chatGptMessageHandler, String picPath) {
+        ImageResponse imageResponse = chatGptMessageHandler.handlerPicture(new File(picPath), ImageVariations.builder().build());
+        List<Item> data = imageResponse.getData();
+        StringBuilder sb = new StringBuilder();
+        data.forEach(item -> sb.append("优化之后的图片链接：" + item.getUrl() + "\n"));
+        return sb;
     }
 
     @Override
@@ -101,10 +102,7 @@ public class WechatAdapter implements IMsgHandlerFace {
             String picPath = picPrefix + File.separator + fileName + ".png"; // 调用此方法来保存图片
             DownloadTools.getDownloadFn(baseMsg, MsgTypeEnum.PIC.getType(), picPath); // 保存图片的路径
             ChatGptMessageHandler dispatcher = messageHandlerDispatcher.dispatcher();
-            ImageResponse imageResponse = dispatcher.handlerPicture(new File(picPath), ImageVariations.builder().build());
-            List<Item> data = imageResponse.getData();
-            StringBuilder sb = new StringBuilder();
-            data.forEach(item -> sb.append("优化之后的图片链接：" + item.getUrl() + "\n"));
+            StringBuilder sb = handlerPic(dispatcher, picPath);
             return sb.toString();
         }
     }
@@ -132,5 +130,10 @@ public class WechatAdapter implements IMsgHandlerFace {
     @Override
     public String mediaMsgHandle(BaseMsg baseMsg) {
         return null;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        this.chatGptMessageHandler = messageHandlerDispatcher.dispatcher();
     }
 }

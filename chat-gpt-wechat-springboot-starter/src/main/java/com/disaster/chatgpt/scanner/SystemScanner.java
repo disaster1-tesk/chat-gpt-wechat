@@ -2,22 +2,19 @@ package com.disaster.chatgpt.scanner;
 
 
 import cn.zhouyafeng.itchat4j.Wechat;
-import com.disaster.chatgpt.Utils.ThreadUtil;
+import com.disaster.chatgpt.utils.ThreadUtil;
 import com.disaster.chatgpt.adapter.QQAdapter;
 import com.disaster.chatgpt.adapter.WechatAdapter;
 import com.disaster.chatgpt.configcenter.Directory;
-import com.disaster.chatgpt.infrastructure.utils.LRUCache;
 import lombok.extern.slf4j.Slf4j;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.BotFactory;
 import net.mamoe.mirai.auth.BotAuthorization;
 import net.mamoe.mirai.utils.BotConfiguration;
-import org.apache.commons.lang3.ClassUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -27,9 +24,7 @@ import org.springframework.web.context.ConfigurableWebApplicationContext;
 import xyz.cssxsh.mirai.device.MiraiDeviceGenerator;
 import xyz.cssxsh.mirai.tool.FixProtocolVersion;
 
-import java.lang.reflect.Method;
 import java.util.Scanner;
-import java.util.concurrent.Executors;
 
 @Component
 @Slf4j

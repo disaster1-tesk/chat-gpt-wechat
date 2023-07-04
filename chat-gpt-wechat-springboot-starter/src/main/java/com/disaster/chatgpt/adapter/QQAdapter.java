@@ -7,15 +7,20 @@ import net.mamoe.mirai.event.EventHandler;
 import net.mamoe.mirai.event.ListenerHost;
 import net.mamoe.mirai.event.events.*;
 import net.mamoe.mirai.message.data.*;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
 import java.util.Arrays;
 
 @Component
-public class QQAdapter implements ListenerHost {
+public class QQAdapter implements ListenerHost, InitializingBean {
 
     @Autowired
     private MessageHandlerDispatcher messageHandlerDispatcher;
+
+    private ChatGptMessageHandler chatGptMessageHandler;
 
     /**
      * 机器人收到的好友消息的事件
@@ -25,11 +30,10 @@ public class QQAdapter implements ListenerHost {
     @EventHandler
     public void onFriendMessageEvent(FriendMessageEvent event) {
         String prompt = event.getMessage().contentToString().trim();
-        ChatGptMessageHandler dispatcher = messageHandlerDispatcher.dispatcher();
         try {
             event.getSubject().sendMessage(new MessageChainBuilder()
                     .append(new QuoteReply(event.getMessage()))
-                    .append(dispatcher.handlerText(prompt))
+                    .append(chatGptMessageHandler.handlerText(prompt))
                     .build());
         } catch (MessageTooLargeException e) {
             event.getSubject().sendMessage(prompt);
@@ -45,12 +49,11 @@ public class QQAdapter implements ListenerHost {
     public void onGroupMessageEvent(GroupMessageEvent event) {
         if (event.getMessage().contains(new At(event.getBot().getId()))) {
             String prompt = event.getMessage().contentToString().replace("@" + event.getBot().getId(), "").trim();
-            ChatGptMessageHandler dispatcher = messageHandlerDispatcher.dispatcher();
             try {
                 event.getSubject().sendMessage(new MessageChainBuilder()
                         .append(new QuoteReply(event.getMessage()))
                         .append(new At(event.getSender().getId()))
-                        .append(dispatcher.handlerText(prompt))
+                        .append(chatGptMessageHandler.handlerText(prompt))
                         .build());
             } catch (MessageTooLargeException e) {
                 event.getSubject().sendMessage(prompt);
@@ -77,11 +80,10 @@ public class QQAdapter implements ListenerHost {
     @EventHandler
     public void onStrangerMessageEvent(StrangerMessageEvent event){
         String prompt = event.getMessage().contentToString().trim();
-        ChatGptMessageHandler dispatcher = messageHandlerDispatcher.dispatcher();
         try {
             event.getSubject().sendMessage(new MessageChainBuilder()
                     .append(new QuoteReply(event.getMessage()))
-                    .append(dispatcher.handlerText(prompt))
+                    .append(chatGptMessageHandler.handlerText(prompt))
                     .build());
         } catch (MessageTooLargeException e) {
             event.getSubject().sendMessage(prompt);
@@ -96,12 +98,11 @@ public class QQAdapter implements ListenerHost {
     public void onTempMessageEvent(TempMessageEvent event){
         if (event.getMessage().contains(new At(event.getBot().getId()))) {
             String prompt = event.getMessage().contentToString().replace("@" + event.getBot().getId(), "").trim();
-            ChatGptMessageHandler dispatcher = messageHandlerDispatcher.dispatcher();
             try {
                 event.getSubject().sendMessage(new MessageChainBuilder()
                         .append(new QuoteReply(event.getMessage()))
                         .append(new At(event.getSender().getId()))
-                        .append(dispatcher.handlerText(prompt))
+                        .append(chatGptMessageHandler.handlerText(prompt))
                         .build());
             } catch (MessageTooLargeException e) {
                 event.getSubject().sendMessage(prompt);
@@ -117,12 +118,11 @@ public class QQAdapter implements ListenerHost {
     public void onGroupTempMessageEvent(GroupTempMessageEvent event){
         if (event.getMessage().contains(new At(event.getBot().getId()))) {
             String prompt = event.getMessage().contentToString().replace("@" + event.getBot().getId(), "").trim();
-            ChatGptMessageHandler dispatcher = messageHandlerDispatcher.dispatcher();
             try {
                 event.getSubject().sendMessage(new MessageChainBuilder()
                         .append(new QuoteReply(event.getMessage()))
                         .append(new At(event.getSender().getId()))
-                        .append(dispatcher.handlerText(prompt))
+                        .append(chatGptMessageHandler.handlerText(prompt))
                         .build());
             } catch (MessageTooLargeException e) {
                 event.getSubject().sendMessage(prompt);
@@ -131,4 +131,8 @@ public class QQAdapter implements ListenerHost {
     }
 
 
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        this.chatGptMessageHandler = messageHandlerDispatcher.dispatcher();
+    }
 }
